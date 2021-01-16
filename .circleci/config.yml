@@ -10,7 +10,6 @@ jobs:
       - restore_cache:
           keys:
             - dependencies-{{ checksum "requirements/dev.txt" }}-{{ checksum "requirements/prod.txt" }}
-            - dependencies-
       - run:
           name: install python and dependencies
           command: |
