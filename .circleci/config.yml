@@ -1,8 +1,9 @@
+version: 2
 jobs:
   install:
     docker:
-      - image: cimg/python:3.9.1
-      - image: circleci/postgres:9.6.2
+      - image: circleci/python:3.9.1
+      - image: circleci/postgres:9.6.5
         environment:
           POSTGRES_DB: example
           POSTGRES_USER: circleci
@@ -15,10 +16,12 @@ jobs:
       - restore_cache:
           keys:
             - dependencies-{{ checksum "requirements/dev.txt" }}-{{ checksum "requirements/prod.txt" }}
+            # Fallback to using the latest cache if no exact match is found
             - dependencies-
       - run: 
           name: Install dependencies
           command: pip install -r requirements/dev.txt
+      # Upgrade dependencies for sqlalchemy and Flask-SQLAlchemy to pass unit tests
       - run:
           command: pip install sqlalchemy --upgrade && pip install Flask-SQLAlchemy --upgrade
       - run: 
@@ -33,25 +36,23 @@ jobs:
             FLASK_APP: /home/circleci/repo/autoapp.py
             FLASK_DEBUG: 0
           command: flask test
-
-  deploy:
+  back-deploy-heroku:
     docker:
       - image: buildpack-deps:trusty
     steps:
       - checkout
       - run:
           name: Heroku Deploy
-          command: git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD:main
+          command: git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD:main -f
       - run:
           name: Smoke Test
           command: |
-            HTTPCODE=`curl -s -o /dev/null -w "%{http_code}" https://devops-project-back.herokuapp.com/api/articles`
+            HTTPCODE=`curl -s -o /dev/null -w "%{http_code}" https://$HEROKU_APP_NAME.herokuapp.com/`
             if [[ "$HTTPCODE" -ne 200 ]]; then
               echo "heroku app not responding, failing deploy" \
               exit 1; \
             fi
-            
-  build-push:
+  docker-build-and-push:
     docker:
       - image: docker:17.05.0-ce-git
     steps:
@@ -69,16 +70,14 @@ jobs:
             docker tag app $DOCKER_HUB_USER_ID/devops-project-back:latest
             docker push $DOCKER_HUB_USER_ID/devops-project-back:$CIRCLE_BUILD_NUM
             docker push $DOCKER_HUB_USER_ID/devops-project-back:latest
-
-version: 2.1
 workflows:
   version: 2
-  devopsTP4:
+  build-test:
     jobs:
       - install
-      - deploy:
+      - back-deploy-heroku:
           requires:
             - install
-      - build-push:
+      - docker-build-and-push:
           requires:
             - install
