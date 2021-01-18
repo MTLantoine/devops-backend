@@ -20,7 +20,7 @@ jobs:
           name: install python and dependencies
           command: pip install -r requirements/dev.txt
       - run:
-          command: pip install sqlalechmy --upgrade && pip install Flask-SQLAlchemy --upgrade
+          command: pip install sqlalchemy --upgrade && pip install Flask-SQLAlchemy --upgrade
       - run:
           name: db upgrade
           environment:
