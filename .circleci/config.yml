@@ -64,6 +64,7 @@ jobs:
               echo "heroku app not responding, failing deploy" \
               exit 1; \
             fi
+            
   docker-build-and-push:
     docker:
       - image: docker:17.05.0-ce-git
