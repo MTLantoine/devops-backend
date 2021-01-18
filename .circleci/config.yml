@@ -32,19 +32,19 @@ jobs:
           command: |
             . venv/bin/activate
             flask db upgrade
-      # - run:
-      #     name: flask test
-      #     environment:
-      #       FLASK_APP: /home/circleci/repo/autoapp.py
-      #       FLASK_DEBUG: 0
-      #       POSTGRES_USER: postgres
-      #       POSTGRES_DB: bdtest
-      #       POSTGRES_PASSWORD: somePwd
-      #       POSTGRES_PORT: 5432
-      #       DATABASE_URL: postgresql://postgres:somePwd@localhost:5432/postgres
-      #     command: |
-      #       . venv/bin/activate
-      #       flask test
+      - run:
+          name: flask test
+          environment:
+            FLASK_APP: /home/circleci/repo/autoapp.py
+            FLASK_DEBUG: 0
+            POSTGRES_USER: postgres
+            POSTGRES_DB: bdtest
+            POSTGRES_PASSWORD: somePwd
+            POSTGRES_PORT: 5432
+            DATABASE_URL: postgresql://postgres:somePwd@localhost:5432/postgres
+          command: |
+            . venv/bin/activate
+            flask test
       - run: docker container stop flask_db_test
       - run: docker container rm flask_db_test
       - run: unset DATABASE_URL
