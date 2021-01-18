@@ -12,23 +12,23 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - setup_remote_docker
       - restore_cache:
           keys:
             - dependencies-{{ checksum "requirements/dev.txt" }}-{{ checksum "requirements/prod.txt" }}
-      - run:
-          name: install python and dependencies
+            - dependencies-
+      - run: 
+          name: Install dependencies
           command: pip install -r requirements/dev.txt
       - run:
           command: pip install sqlalchemy --upgrade && pip install Flask-SQLAlchemy --upgrade
-      - run:
-          name: db upgrade
+      - run: 
+          name: Setup dababase
           environment:
             FLASK_APP: /home/circleci/repo/autoapp.py
-            FLASK_DEBUG: 0
+            FLASK_DEBUG: 0 
           command: flask db upgrade
-      - run:
-          name: flask test
+      - run: 
+          name: Flask test
           environment:
             FLASK_APP: /home/circleci/repo/autoapp.py
             FLASK_DEBUG: 0
